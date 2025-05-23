@@ -1,0 +1,58 @@
+# This script id to plot the output of SeqKit stats
+getwd() # This command tells you in which directory you are
+exercise4 <- read.table("~/Summer_Project/Bioinformatics/Classes/output4.txt", header=TRUE) # Creates a table from the output.txt table from SeqKit
+temp <- grep("Summer_Project", exercise4$file)
+exercise4[1,] # used to open all values from row1
+exercise4[1,c(1,2,3,4,5,6,7,8)] # another method to open all values from row 1
+exercise4.1 <- exercise4[temp,] #Removed "file" rows
+
+exercise4.1$file<-gsub("/Users/kaelyn/Summer_Project/Microbial_cds/","",exercise4.1$file) #Removes part of bacteria names
+exercise4.1$file<-gsub("_cds.fna","",exercise4.1$file) #also modifies bacteria name and places in table
+
+exercise4.1<-exercise4.1[,c(1,4,5,6,7,8)] #keeps colums that are not format or type
+
+mustbeinteger<-(exercise4.1[c(1,2,3,4,5),c(1,2,3,4,5)]) #changes the values on the table into integers, this only changes the first five values and that seems to solve the problem but i need to fix that later
+hatecommas<-c("num_seqs","min_len","sum_len","avg_len","max_len") #not sure if this line is actually needed for the comma remouval, should investigate later
+
+for (h in hatecommas) {
+  exercise4.1[[h]]<-gsub(",","",exercise4.1[[h]])
+} #Removes commas from number to graph properly
+
+for (i in 2:6) {  # Remove commas, convert to numeric, then to integer
+  exercise4.1[[i]]<-as.integer(exercise4.1[[i]])
+}
+
+library(ggpubr)
+library(ggplot2)
+
+exercise4.1$file<- as.factor(exercise4.1$file)
+
+# the p1-p4 commands creates individual plots for each of the fours different data sets using ggplot2
+p1<-ggplot(data = exercise4.1, aes(x= file, y= min_len, fill = file))+ #says what table to use and what pieces of it
+  geom_bar(stat = "identity")+ #honestly not sure what this does, google
+  labs(y = "Minimun Length", x = "") + # labels axes
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) #rotates the axis titles (there was not enough space otherwise)
+#scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#58B536")) # changes colour
+
+p2<-ggplot(data = exercise4.1, aes(x= file, y= avg_len, fill = file))+
+  geom_bar(stat = "identity")+
+  labs(y = "Average Length", x = "") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#58B536"))
+
+p3<-ggplot(data = exercise4.1, aes(x= file, y= sum_len, fill = file))+
+  geom_bar(stat = "identity")+
+  labs(y = "Sum of Lengths", x = "") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#58B536"))
+
+p4<-ggplot(data = exercise4.1, aes(x= file, y= num_seqs, fill = file))+
+  geom_bar(stat = "identity")+
+  labs(y = "Number of\n Sequences", x = "") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#58B536"))
+
+# Combines the plots using ggpubr
+print(ggarrange(p1, p2, p3, p4, # Don't forget print here or plot won't be displayed
+                ncol = 2, nrow = 2, # tell R to print graphs 2x2 instaed of say, 4 in a staright line
+                labels = c("A", "B", "C", "D")))
