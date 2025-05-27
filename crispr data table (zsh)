@@ -1,0 +1,14 @@
+echo "Genome,CRISPR_ID,Repeats,Spacers,Avg_Repeat_Length,Avg_Spacer_Length" > minced_crispr_table.csv
+for genome in ~/Summer_Project/Microbial_Genomes/*.fna
+do
+./minced "$genome" > tmp_minced.txt
+genome_name=$(basename "$genome" .fna)
+grep "Repeats" tmp_minced.txt | awk -v genome="$genome_name" '
+BEGIN { id = 0 }
+{
+id++;
+print genome "," id "," $2 "," $5 "," $8 "," $NF
+}' >> minced_crispr_table.csv
+mv tmp_minced.txt ~/Trash
+done
+
