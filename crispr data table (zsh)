@@ -1,14 +1,20 @@
-echo "Genome,CRISPR_ID,Repeats,Spacers,Avg_Repeat_Length,Avg_Spacer_Length" > minced_crispr_table.csv
-for genome in ~/Summer_Project/Microbial_Genomes/*.fna
-do
-./minced "$genome" > tmp_minced.txt
-genome_name=$(basename "$genome" .fna)
-grep "Repeats" tmp_minced.txt | awk -v genome="$genome_name" '
-BEGIN { id = 0 }
+echo "Genome,CRISPR_ID,Repeats,Spacers,Avg_Repeat_Length,Avg_Spacer_Length" > minced_crispr_table.csv #creates the names for the colums in what will be the output file
+for genome in ~/Summer_Project/Microbial_Genomes/*.fna #starts the loop for any .fna file in this location
+do #needed to run the loop
+./minced "$genome" > tmp_minced.txt #this creates a temporary file where the output of the minced command is stored, this was the easier solution than always having to run commands from minced output info
+genome_name=$(basename "$genome" .fna) #this adds the row names as the genomes.By using basname we take off all the pathways info and are left with the name_genome
+grep "Repeats" tmp_minced.txt | awk -v genome="$genome_name" ' #This looks for anyline with Repeats in it, wich will have information about the number of repeats and average length of repeats and spacers
+BEGIN { id = 0 } #begins the wk, sets variable to 0 an then allows you to set the other variables, counts cripsr
 {
 id++;
-print genome "," id "," $2 "," $5 "," $8 "," $NF
+repeats = $2; #one number per word/number so if you count you can figure the numbers out
+avg_repeat_len = $5;
+avg_spacer_len = $NF;
+spacers = repeats -1; #assuming that the number of spacers will always be one less than that of repeats, not scientifically sounds and should edit later
+print genome "," id "," repeats "," spacers "," avg_repeat_len "," avg_spacer_len
 }' >> minced_crispr_table.csv
 mv tmp_minced.txt ~/Trash
 done
+
+
 
