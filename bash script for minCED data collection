@@ -5,10 +5,10 @@ echo "Genome,CRISPR_ID,Repeats,Spacers,Avg_Repeat_Length,Avg_Spacer_Length" > mi
 for genome in ~/Summer_Project/Microbial_Genomes/*.fna; do
   ./minced "$genome" > tmp_minced.txt
   ./minced -spacers "$genome" output.txt
-
+      
   genome_name=$(basename "$genome" .fna)
   spacer_file="$HOME/Summer_Project/Microbial_Genomes/${genome_name}_spacers.fa"
-
+     
 # Tmp file for spacer count
 spacer_counts_file=$(mktemp)
 
@@ -21,21 +21,6 @@ if [[ -f "$spacer_file" ]]; then
       count[locus]++
     }
 END {
-
-#counts spacers per locus
-for (l in count) {
-        print l, count[l]
-      }
-# identifies all crispr locus
-if [[ -f "$spacer_file" ]]; then
-    grep '^>' "$spacer_file" | \
-    awk -F'[>_]' '
-    {
-      locus = $4
-      count[locus]++
-    }
-END {
-  
 #counts spacers per locus
 for (l in count) {
         print l, count[l]   
@@ -53,21 +38,7 @@ if [[ -z "$crispr_lines" ]]; then
    else
    echo "$crispr_lines" | awk -v genome="$genome_name" -v counts_file="$spacer_counts_file" '
    BEGIN {
-   while ((getline < counts_file) > 0) {
- }' > "$spacer_counts_file"
- fi
-    
- # Now reading the general output
-  crispr_lines=$(grep "Repeats" tmp_minced.txt)
-      
-#if loop for microbes with no crispr so my code does not crash
-#at echo the regular code for counting the other values starts
-if [[ -z "$crispr_lines" ]]; then
-    echo "${genome_name},0,0,0,0,0" >> minced_crispr_table.csv
-   else
-   echo "$crispr_lines" | awk -v genome="$genome_name" -v counts_file="$spacer_counts_file" '
-   BEGIN {
-   while ((getline < counts_file) > 0) {
+while ((getline < counts_file) > 0) {
    spacer_counts[$1] = $2
     }
     id = 0
@@ -82,23 +53,9 @@ if [[ -z "$crispr_lines" ]]; then
         spacer_count = (id in spacer_counts ? spacer_counts[id] : 0)
         print genome "," id "," repeats "," spacer_count "," avg_repeat_len "," avg_spacer_len
       }' >> minced_crispr_table.csv
-spacer_counts[$1] = $2
-    }
-    id = 0
-    }
-    {
-      
-#counting the colums
-    id++
-        repeats = $2
-        avg_repeat_len = $5
-        avg_spacer_len = $NF
-        spacer_count = (id in spacer_counts ? spacer_counts[id] : 0)
-        print genome "," id "," repeats "," spacer_count "," avg_repeat_len "," avg_spacer_len
-      }' >> minced_crispr_table.csv
-  fi
+fi
      
 #Still can use delete
-  mv "$spacer_counts_file" ~/Trahs
+  mv "$spacer_counts_file" ~/Trash
 done 
       
