@@ -1,0 +1,40 @@
+df <- read.csv("~/minced/minced_crispr_table.csv", stringsAsFactors = FALSE)
+df$Repeats <- as.integer(df$Repeats)#makes R read the number in my table as actual numbers not charecters
+df$Spacers <- as.integer(df$Spacers)
+df$Avg_Repeat_Length <- as.integer(df$Avg_Repeat_Length)
+df$Avg_Spacer_Length <- as.integer(df$Avg_Spacer_Length)
+df$CRISPR_ID <- as.integer(df$CRISPR_ID)
+df$Genome<-gsub("_genome","",df$Genome)#remouves genome
+df$Genome<-gsub("_gnome","",df$Genome)#because i mispelt one
+df$CRISPR_ID <- ifelse(df$Repeats > 0, 1, 0) #to insure that if crispr does not exit, its value is 0
+df$Location <- ifelse(df$Repeats > 30, "Polar", "Tropical") #randomly assigning location here since I don't have any location data
+
+library(ggplot2)
+library(ggpubr)
+
+
+p1 <- ggplot(data=df, aes(x=Location, y=Repeats, fill = Location))+
+  geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) #rotates the axis titles (there was not enough space otherwise
+
+p2 <- ggplot(data=df, aes(x=Location, y=Spacers, fill = Location))+
+  geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+p3 <- ggplot(data=df, aes(x=Location, y=Avg_Repeat_Length, fill = Location))+
+  geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+p4 <- ggplot(data=df, aes(x=Location, y=Avg_Spacer_Length, fill = Location))+
+  geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  
+
+p5 <- ggplot(data=df, aes(x=Location, y=CRISPR_ID, fill = Location))+
+  geom_bar(stat = "identity")+ #honestly not sure what this does, google# labels axes
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) #rotates the axis titles (there was not enough space otherwise)
+#scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#58B536")) # changes colour
+
+print(ggarrange(p1, p2, p3, p4, p5, # Don't forget print here or plot won't be displayed
+                ncol = 2, nrow = 3, # tell R to print graphs 2x2 instaed of say, 4 in a staright line
+                labels = c("A", "B", "C", "D","E")))
